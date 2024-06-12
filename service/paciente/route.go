@@ -24,10 +24,10 @@ func NewHandlerPaciente(store types.PacienteStore) *Handler {
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/registro-paciente", h.handleRegisterPacinete).Methods(http.MethodPost)
-	router.HandleFunc("/get-paciente-documento/{documento}", h.GetPacientePorDocumento).Methods(http.MethodGet)
+	router.HandleFunc("/get-paciente-documento/{documento}", h.handleGetPaciente).Methods(http.MethodGet)
 }
 
-func (h *Handler) GetPacientePorDocumento(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) handleGetPaciente(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	str, ok := vars["documento"]
 	if !ok {
@@ -94,3 +94,35 @@ func (h *Handler) handleRegisterPacinete(w http.ResponseWriter, r *http.Request)
 
 	_ = utils.WriteJSON(w, http.StatusCreated, "ok")
 }
+
+/*
+func (h *Handler) handleUpdatePaciente(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	str, ok := vars["documento"]
+	if !ok {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("missing patient ID"))
+		return
+	}
+
+	documento, err := strconv.Atoi(str)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid patient ID"))
+		return
+	}
+
+	var paciente types.RegisterPaciente
+	if err := utils.ParseJSON(r, &paciente); err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+
+		err = h.store.UpdatePaciente(documento, paciente)
+		if err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+	_ = utils.WriteJSON(w, http.StatusOK, "ok")
+}
+*/

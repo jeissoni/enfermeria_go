@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"enfermeria_go/service/home"
 	"enfermeria_go/service/paciente"
 	"enfermeria_go/service/user"
 	"github.com/gorilla/mux"
@@ -27,14 +28,17 @@ func (s *APIServer) Run() error {
 
 	subrouter := router.PathPrefix("/api/v1").Subrouter()
 
+	home.RegisterRoutes(router)
+
 	userStore := user.NewStore(s.db)
 	userHandler := user.NewHandler(userStore)
 	userHandler.RegisterRoutes(subrouter)
-	log.Println("Listening on", s.adress)
 
 	pacienteStore := paciente.NewStore(s.db)
 	pacienteHandler := paciente.NewHandlerPaciente(pacienteStore)
 	pacienteHandler.RegisterRoutes(subrouter)
+
+	log.Println("Listening on", s.adress)
 
 	return http.ListenAndServe(s.adress, router)
 
