@@ -25,6 +25,8 @@ func NewHandlerPaciente(store types.PacienteStore) *Handler {
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/registro-paciente", h.handleRegisterPacinete).Methods(http.MethodPost)
 	router.HandleFunc("/get-paciente-documento/{documento}", h.handleGetPaciente).Methods(http.MethodGet)
+	router.HandleFunc("/update-paciente", h.handleUpdatePaciente).Methods(http.MethodPut)
+	router.HandleFunc("/delete-paciente/{documento}", h.handleDeletePaciente).Methods(http.MethodDelete)
 }
 
 func (h *Handler) handleGetPaciente(w http.ResponseWriter, r *http.Request) {
@@ -95,20 +97,7 @@ func (h *Handler) handleRegisterPacinete(w http.ResponseWriter, r *http.Request)
 	_ = utils.WriteJSON(w, http.StatusCreated, "ok")
 }
 
-/*
 func (h *Handler) handleUpdatePaciente(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	str, ok := vars["documento"]
-	if !ok {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("missing patient ID"))
-		return
-	}
-
-	documento, err := strconv.Atoi(str)
-	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid patient ID"))
-		return
-	}
 
 	var paciente types.RegisterPaciente
 	if err := utils.ParseJSON(r, &paciente); err != nil {
@@ -116,13 +105,42 @@ func (h *Handler) handleUpdatePaciente(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_, err := h.store.GetPacientePorDocumento(paciente.Documento)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("user with Documento %s does not exists", paciente.Documento))
+		return
+	}
 
-		err = h.store.UpdatePaciente(documento, paciente)
-		if err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, err)
-			return
-		}
+	err = h.store.UpdatePaciente(paciente)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
 
 	_ = utils.WriteJSON(w, http.StatusOK, "ok")
 }
-*/
+
+func (h *Handler) handleDeletePaciente(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	str, ok := vars["documento"]
+	if !ok {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("missing document ID"))
+		return
+	}
+
+	documento, err := strconv.Atoi(str)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid document ID"))
+		return
+	}
+
+	err = h.store.DeltePaciente(documento)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	_ = utils.WriteJSON(w, http.StatusOK, "ok")
+}

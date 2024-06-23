@@ -85,6 +85,44 @@ func (s *Store) GetPacientePorDocumento(documento int) (*types.Paciente, error) 
 	return u, nil
 }
 
+func (s *Store) UpdatePaciente(user types.RegisterPaciente) error {
+	_, err := s.db.Exec("UPDATE paciente "+
+		"SET tipo=$1, "+
+		"primer_nombre=$2, "+
+		"segundo_nombre=$3, "+
+		"primer_apellido=$4, "+
+		"segundo_apellido=$5, "+
+		"sexo=$6, "+
+		"eps=$7, "+
+		"fecha_nacimiento=$8, "+
+		"fecha_modificacion=CURRENT_TIMESTAMP "+
+		"WHERE documento=$9;",
+		user.Tipo,
+		user.Primer_nombre,
+		user.Segundo_nombre,
+		user.Primer_apellido,
+		user.Segundo_apellido,
+		user.Sexo,
+		user.Eps,
+		user.Fecha_nacimiento,
+		user.Documento)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Store) DeltePaciente(documento int) error {
+
+	_, err := s.db.Exec("DELETE FROM paciente WHERE documento=$1;", documento)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func scanRowsIntoUser(rows *sql.Rows) (*types.Paciente, error) {
 	paciente := new(types.Paciente)
 
