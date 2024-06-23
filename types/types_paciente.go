@@ -29,6 +29,8 @@ type RegisterPaciente struct {
 }
 
 type PacienteStore interface {
-	GetPacientePorDocumento(documento int) (*Paciente, error)
+	GetPacientePorDocumento(int) (*Paciente, error)
 	CrearPaciente(RegisterPaciente) error
+	UpdatePaciente(RegisterPaciente) error
+	DeltePaciente(int) error
 }
